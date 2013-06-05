@@ -1,0 +1,6 @@
+{
+  "devDependencies": {
+    "autoprefixer": "latest",
+    "less": "latest"
+  }
+}
