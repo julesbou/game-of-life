@@ -1,6 +1,6 @@
 var PPS = 20; // pixels per square (in pixels)
 var DRAWLOOP_INTERVAL = 20; // (in milliseconds)
-var GAMELOOP_INTERVAL = 200; // (in milliseconds)
+var GAMELOOP_INTERVAL = 140; // (in milliseconds)
 
 function Game(canvasElement, buttonElement) {
   this.canvas = canvasElement;
@@ -15,15 +15,12 @@ function Game(canvasElement, buttonElement) {
 
   this.drawGrid();
   this.initDOMEvents();
+  this.loadTemplates();
 
   this.drawloopInterval = setInterval(this.drawloop.bind(this), DRAWLOOP_INTERVAL);
   this.gameloopInterval = setInterval(this.gameloop.bind(this), GAMELOOP_INTERVAL);
 
   window.addEventListener('resize', this.drawGrid.bind(this));
-
-  setTimeout(function() {
-    document.querySelector('dialog').className = 'fadeout';
-  }, 0);
 }
 
 Game.prototype = {
@@ -38,27 +35,54 @@ Game.prototype = {
     ctx.clearRect(0, 0, this.grid.width, this.grid.height);
     ctx.strokeStyle = 'rgba(0, 0, 0, 0.8)';
 
+    this.canvasGrid = {
+      w: Math.floor(this.canvas.width / PPS),
+      h: Math.floor(this.canvas.height / PPS)
+    };
+
+    this.canvasMargins = {
+      x: (this.canvas.width - this.canvasGrid.w * PPS) / 2,
+      y: (this.canvas.height - this.canvasGrid.h * PPS) / 2
+    };
+
+    this.context.restore();
+    this.context.translate(this.canvasMargins.x, this.canvasMargins.y);
+
     // draw vertical lines for grid
-    for (var x = 0; x < Math.floor(this.canvas.width / PPS) + 1; x++) {
-      ctx.moveTo(x * PPS, 0);
-      ctx.lineTo(x * PPS, this.canvas.height);
+    for (var x = 0; x < this.canvasGrid.w + 1; x++) {
+      ctx.moveTo(x * PPS , 0);
+      ctx.lineTo(x * PPS, this.canvasGrid.h * PPS);
     }
 
     // draw horizontal lines for grid
-    for (var y = 0; y < Math.floor(this.canvas.height / PPS) + 1; y++) {
-      ctx.moveTo(0, y * PPS);
-      ctx.lineTo(this.canvas.width, y * PPS);
+    for (var y = 0; y < this.canvasGrid.h + 1; y++) {
+      ctx.moveTo(0, y * PPS + 1);
+      ctx.lineTo(this.canvasGrid.w * PPS, y * PPS + 1);
     }
 
     ctx.stroke();
   },
 
+  drawTemplate: function(template) {
+    this.map = new Map();
+
+    var templateStart = {
+      x: Math.round(this.grid.width / PPS / 2 - template[0].length / 2),
+      y: Math.round(this.grid.height / PPS / 2 - template.length / 2)
+    };
+
+    for (var y = 0; y < template.length; y++) {
+      for (var x = 0; x < template[y].length; x++) {
+        this.map.add(templateStart.x + x, templateStart.y + y, template[y][x]);
+      }
+    }
+  },
 
   drawloop: function() {
 
     // Convert pixels coords to 'x' and 'y' indexes on the grid
-    var cursorX = this.cursor && Math.floor(this.cursor[0] / PPS);
-    var cursorY = this.cursor && Math.floor(this.cursor[1] / PPS);
+    var cursorX = this.cursor && Math.floor((this.cursor[0] - this.canvasMargins.x) / PPS);
+    var cursorY = this.cursor && Math.floor((this.cursor[1] - this.canvasMargins.y) / PPS);
 
     // 1 - draw grid
     this.context.clearRect(0, 0, this.grid.width, this.grid.height);
@@ -91,7 +115,6 @@ Game.prototype = {
     this.context.fill();
   },
 
-
   gameloop: function() {
     if (!this.started) return;
 
@@ -123,6 +146,47 @@ Game.prototype = {
       // each adjacent cell 'dead' with exactly 3 neighboors 'alive' lives
       if (!this.map.find(x, y) && neighboors === 3) this.map.add(x, y);
     }.bind(this));
+  },
+
+  loadTemplates: function() {
+    var self = this;
+    var templates = [];
+    var http = new XMLHttpRequest();
+
+    http.onreadystatechange = function() {
+      if (http.readyState == 4) {
+        var templates = http.responseText.split(/^\s*[\r\n]/gm)
+
+        templates = templates.map(function(str) {
+          var templateArr = str.split(/\n/g).slice(0, -1);
+
+          return {
+            name: templateArr[0],
+            map: templateArr.splice(1, templateArr.length).map(function(str) {
+              return str.split('').map(function(i) {
+                return parseInt(i, 10);
+              })
+            })
+          };
+        });
+
+        var $select = document.querySelector('select');
+
+        templates.forEach(function(template, index) {
+          var option = document.createElement('option');
+          option.text = template.name;
+          option.value = index;
+          $select.appendChild(option);
+        });
+
+        $select.addEventListener('change', function() {
+          self.drawTemplate(templates[this.value].map);
+        });
+      }
+    }
+
+    http.open('GET', 'templates.txt', true);
+    http.send();
   },
 
   destroy: function() {
