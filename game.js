@@ -91,14 +91,14 @@ Game.prototype = {
     // 2 - draw square under cursor
     if (this.cursor && !this.mobile) {
       this.context.beginPath();
-      this.context.fillStyle = 'rgba(0, 0, 0, 0.5)';
+      this.context.fillStyle = 'rgba(255, 65, 54, 0.4)';
       this.context.rect(cursorX * PPS, cursorY * PPS, PPS, PPS);
       this.context.fill();
     }
 
     // 3 - manage additions and deletions
     this.context.beginPath();
-    this.context.fillStyle = 'rgba(0, 0, 0, 1)';
+    this.context.fillStyle = '#ff4136';
 
     if (this.click && !this.alreadyVisited[cursorX + '-' + cursorY]) {
       // when mouse is down toggle each square only once
