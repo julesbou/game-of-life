@@ -3,7 +3,7 @@ install:
 
 css:
 	lessc style.less > style.css
-	./node_modules/autoprefixer/autoprefixer style.css
+	autoprefixer-cli style.css
 
 watch:
 	#npm install -g watchy

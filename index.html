@@ -8,9 +8,12 @@
   <body>
     <noscript>You need to enable JavaScript</noscript>
     <canvas>Your browser need to support canvas element.</canvas>
-    <select class="__top-left hide-mobile" autofocus><option>Choose a template..</option></select>
-    <button class="__top-right">Start</button>
-    <a class="__round hide-mobile" href="http://home.comcast.net/~coggerk/project/life.html" target="_blank">?</a>
+    <button class="btn btn-halo btn-start">Start</button>
+    <dialog open>
+      <h3 class="title">Conway's Game of Life in Javascript</h3>
+      <p class="desc">You can edit it by clicking and keep moving.</p>
+      <button class="btn btn-flat btn-ready" onclick="document.querySelector('dialog').close()">Ready</button>
+    </dialog>
     <script src="game.js?version=0.0.2"></script>
   </body>
 </html>

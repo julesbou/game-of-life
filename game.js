@@ -1,11 +1,12 @@
-var PPS = 20; // pixels per square (in pixels)
+var PPS = 10; // pixels per square (in pixels)
 var DRAWLOOP_INTERVAL = 20; // (in milliseconds)
 var GAMELOOP_INTERVAL = 140; // (in milliseconds)
 
-function Game(canvasElement, buttonElement) {
+function Game(canvasElement, buttonElement, dialogElement) {
   this.canvas = canvasElement;
   this.context = canvasElement.getContext('2d');
   this.button = buttonElement;
+  this.dialog = dialogElement;
   this.grid = document.createElement('canvas');
 
   this.map = new Map();
@@ -15,7 +16,6 @@ function Game(canvasElement, buttonElement) {
 
   this.drawGrid();
   this.initDOMEvents();
-  this.loadTemplates();
 
   this.drawloopInterval = setInterval(this.drawloop.bind(this), DRAWLOOP_INTERVAL);
   this.gameloopInterval = setInterval(this.gameloop.bind(this), GAMELOOP_INTERVAL);
@@ -48,19 +48,17 @@ Game.prototype = {
     this.context.restore();
     this.context.translate(this.canvasMargins.x, this.canvasMargins.y);
 
-    // draw vertical lines for grid
-    for (var x = 0; x < this.canvasGrid.w + 1; x++) {
-      ctx.moveTo(x * PPS , 0);
-      ctx.lineTo(x * PPS, this.canvasGrid.h * PPS);
-    }
+    this.randomize();
+  },
 
-    // draw horizontal lines for grid
-    for (var y = 0; y < this.canvasGrid.h + 1; y++) {
-      ctx.moveTo(0, y * PPS + 1);
-      ctx.lineTo(this.canvasGrid.w * PPS, y * PPS + 1);
+  randomize: function() {
+    for (var x = 0; x < this.canvasGrid.w; x++) {
+      for (var y = 0; y < this.canvasGrid.h; y++) {
+        if (Math.random() > 0.8) {
+          this.map.add(x, y)
+        }
+      }
     }
-
-    ctx.stroke();
   },
 
   drawTemplate: function(template) {
@@ -89,7 +87,7 @@ Game.prototype = {
     this.context.drawImage(this.grid, 0, 0);
 
     // 2 - draw square under cursor
-    if (this.cursor && !this.mobile) {
+    if (this.cursor && !this.mobile && cursorX >= 0 && cursorY >= 0) {
       this.context.beginPath();
       this.context.fillStyle = 'rgba(255, 65, 54, 0.4)';
       this.context.rect(cursorX * PPS, cursorY * PPS, PPS, PPS);
@@ -98,7 +96,7 @@ Game.prototype = {
 
     // 3 - manage additions and deletions
     this.context.beginPath();
-    this.context.fillStyle = '#ff4136';
+    this.context.fillStyle = 'rgba(255, 65, 54, ' + (this.started ? '.3' : '.2') + ')';
 
     if (this.click && !this.alreadyVisited[cursorX + '-' + cursorY]) {
       // when mouse is down toggle each square only once
@@ -148,61 +146,23 @@ Game.prototype = {
     }.bind(this));
   },
 
-  loadTemplates: function() {
-    var self = this;
-    var templates = [];
-    var http = new XMLHttpRequest();
-
-    http.onreadystatechange = function() {
-      if (http.readyState == 4) {
-        var templates = http.responseText.split(/^\s*[\r\n]/gm)
-
-        templates = templates.map(function(str) {
-          var templateArr = str.split(/\n/g).slice(0, -1);
-
-          return {
-            name: templateArr[0],
-            map: templateArr.splice(1, templateArr.length).map(function(str) {
-              return str.split('').map(function(i) {
-                return parseInt(i, 10);
-              })
-            })
-          };
-        });
-
-        var $select = document.querySelector('select');
-
-        templates.forEach(function(template, index) {
-          var option = document.createElement('option');
-          option.text = template.name;
-          option.value = index;
-          $select.appendChild(option);
-        });
-
-        $select.addEventListener('change', function() {
-          self.drawTemplate(templates[this.value].map);
-        });
-      }
-    }
-
-    http.open('GET', 'templates.txt', true);
-    http.send();
-  },
-
   destroy: function() {
     clearInterval(this.drawloopInterval);
     clearInterval(this.gameloopInterval);
-    // TODO unbind DOM events
+  },
+
+  start: function() {
+    this.started = !this.started;
+    this.button.innerText = this.started ? 'Stop' : 'Start';
+    this.button.style.opacity = 1;
   },
 
   initDOMEvents: function() {
     var self = this;
 
-      // toggle game (draw/start)
-    this.button.addEventListener(this.mobile ? 'touchstart' : 'click', function() {
-      self.started = !self.started;
-      self.button.innerText = self.started ? 'Stop' : 'Start';
-    });
+    // start game
+    this.button.addEventListener(this.mobile ? 'touchstart' : 'click', this.start.bind(this));
+    this.dialog.addEventListener('close', this.start.bind(this));
 
     // set cursor
     document.addEventListener(this.mobile ? 'touchmove' : 'mousemove', function(event) {
@@ -280,4 +240,8 @@ if (typeof Function.prototype.bind !== 'function') {
 }
 
 // start game
-new Game(document.querySelector('canvas'), document.querySelector('button'));
+new Game(
+  document.querySelector('canvas'),
+  document.querySelector('.btn-start'),
+  document.querySelector('dialog')
+);
