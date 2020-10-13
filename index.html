@@ -5,15 +5,22 @@
     <link rel="stylesheet" type="text/css" href="style.css" />
     <meta name="viewport" content="initial-scale=1, maximum-scale=1">
   </head>
-  <body>
+  <body style="background-color: #002b36;">
     <noscript>You need to enable JavaScript</noscript>
     <canvas>Your browser need to support canvas element.</canvas>
     <button class="btn btn-halo btn-start">Start</button>
     <dialog open>
-      <h3 class="title">Conway's Game of Life in Javascript</h3>
-      <p class="desc">You can edit it by clicking and keep moving.</p>
+      <h3 class="title"><a href="https://en.wikipedia.org/wiki/Conway%27s_Game_of_Life" target="_blank">Conway's Game of Life</a> in Javascript</h3>
+      <p class="desc">
+        This is a browser based implementation <br>
+        of "Conway's Game of Life" principles.<br>
+        You can interract with the visualisation by clicking on the canvas.
+      </p>
       <button class="btn btn-flat btn-ready" onclick="document.querySelector('dialog').close()">Ready</button>
     </dialog>
     <script src="game.js?version=0.0.2"></script>
+    <a href="https://github.com/julesbou/game-of-life/blob/gh-pages/game.js" target="_blank" class="source">
+      View source code on Github
+    </a>
   </body>
 </html>

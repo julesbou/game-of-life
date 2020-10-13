@@ -33,7 +33,7 @@ Game.prototype = {
     var ctx = this.grid.getContext('2d');
 
     ctx.clearRect(0, 0, this.grid.width, this.grid.height);
-    ctx.strokeStyle = 'rgba(0, 0, 0, 0.8)';
+    ctx.strokeStyle = 'rgba(0, 0, 0, 1)';
 
     this.canvasGrid = {
       w: Math.floor(this.canvas.width / PPS),
@@ -89,14 +89,14 @@ Game.prototype = {
     // 2 - draw square under cursor
     if (this.cursor && !this.mobile && cursorX >= 0 && cursorY >= 0) {
       this.context.beginPath();
-      this.context.fillStyle = 'rgba(255, 65, 54, 0.4)';
+      this.context.fillStyle = 'rgba(255, 65, 54, 0.6)';
       this.context.rect(cursorX * PPS, cursorY * PPS, PPS, PPS);
       this.context.fill();
     }
 
     // 3 - manage additions and deletions
     this.context.beginPath();
-    this.context.fillStyle = 'rgba(255, 65, 54, ' + (this.started ? '.3' : '.2') + ')';
+    this.context.fillStyle = 'rgba(255, 65, 54, ' + (this.started ? '.4' : '.4') + ')';
 
     if (this.click && !this.alreadyVisited[cursorX + '-' + cursorY]) {
       // when mouse is down toggle each square only once
