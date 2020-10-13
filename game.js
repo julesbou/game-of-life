@@ -89,14 +89,14 @@ Game.prototype = {
     // 2 - draw square under cursor
     if (this.cursor && !this.mobile && cursorX >= 0 && cursorY >= 0) {
       this.context.beginPath();
-      this.context.fillStyle = 'rgba(255, 65, 54, 0.6)';
+      this.context.fillStyle = 'rgba(255, 65, 54, 0.8)';
       this.context.rect(cursorX * PPS, cursorY * PPS, PPS, PPS);
       this.context.fill();
     }
 
     // 3 - manage additions and deletions
     this.context.beginPath();
-    this.context.fillStyle = 'rgba(255, 65, 54, ' + (this.started ? '.4' : '.4') + ')';
+    this.context.fillStyle = 'rgba(255, 65, 54, ' + (this.started ? '.6' : '.4') + ')';
 
     if (this.click && !this.alreadyVisited[cursorX + '-' + cursorY]) {
       // when mouse is down toggle each square only once
@@ -155,6 +155,7 @@ Game.prototype = {
     this.started = !this.started;
     this.button.innerText = this.started ? 'Stop' : 'Start';
     this.button.style.opacity = 1;
+    this.dialog.remove();
   },
 
   initDOMEvents: function() {
@@ -162,7 +163,6 @@ Game.prototype = {
 
     // start game
     this.button.addEventListener(this.mobile ? 'touchstart' : 'click', this.start.bind(this));
-    this.dialog.addEventListener('close', this.start.bind(this));
 
     // set cursor
     document.addEventListener(this.mobile ? 'touchmove' : 'mousemove', function(event) {
@@ -240,7 +240,7 @@ if (typeof Function.prototype.bind !== 'function') {
 }
 
 // start game
-new Game(
+window.game = new Game(
   document.querySelector('canvas'),
   document.querySelector('.btn-start'),
   document.querySelector('dialog')
